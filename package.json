@@ -1,0 +1,21 @@
+{
+  "name": "my-games-billing-service",
+  "version": "0.0.1",
+  "dependencies": {},
+  "devDependencies": {
+    "@types/node": "16.4.10",
+    "@typescript-eslint/eslint-plugin": "4.29.0",
+    "@typescript-eslint/parser": "4.29.0",
+    "cross-env": "7.0.3",
+    "eslint": "7.32.0",
+    "husky": "7.0.0",
+    "typescript": "4.3.5"
+  },
+  "scripts": {
+    "start": "cross-env PORT=80 echo 'Not yet implemented'",
+    "build": "echo 'Not yet implemented'",
+    "lint": "eslint . --max-warnings=0",
+    "lint:fix": "npm run lint -- --fix",
+    "prepare": "husky install"
+  }
+}
