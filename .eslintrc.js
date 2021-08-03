@@ -70,7 +70,7 @@ module.exports = {
         "no-bitwise": "warn",
         "no-caller": "warn",
         "no-cond-assign": "warn",
-        "no-console": "off",
+        "no-console": "warn",
         "no-debugger": "warn",
         "no-empty": "warn",
         "no-empty-function": "warn",

@@ -1,0 +1,8 @@
+{
+    "watch": [
+        "src/app",
+        ".env"
+    ],
+    "ext": "js, ts, json",
+    "exec": "npm run build && npm run start"
+}
