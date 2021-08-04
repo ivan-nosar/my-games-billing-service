@@ -40,6 +40,7 @@ module.exports = {
         "@typescript-eslint/quotes": ["warn", "double"],
         "@typescript-eslint/semi": ["warn", "always"],
         "@typescript-eslint/type-annotation-spacing": "warn",
+        "@typescript-eslint/no-non-null-assertion": "off",
         "arrow-body-style": "warn",
         "arrow-parens": ["warn", "as-needed"],
         "brace-style": ["warn", "1tbs"],

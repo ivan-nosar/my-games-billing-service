@@ -1,0 +1,8 @@
+version: '3'
+services:
+  database:
+    image: "database"
+    env_file:
+      - .env
+    ports:
+      - "$POSTGRES_PORT:$POSTGRES_PORT"
