@@ -1,8 +1,16 @@
 version: '3'
 services:
-  database:
-    image: "database"
+  service-database:
+    image: postgres:13.3
+    restart: on-failure
     env_file:
       - .env
     ports:
       - "$POSTGRES_PORT:$POSTGRES_PORT"
+  scheduler-database:
+    image: mongo:5.0.1
+    restart: on-failure
+    env_file:
+      - .env
+    ports:
+      - "$MONGO_PORT:$MONGO_PORT"

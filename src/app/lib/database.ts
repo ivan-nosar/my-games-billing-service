@@ -1,4 +1,4 @@
-import { createConnection } from "typeorm";
+import { createConnection, Connection } from "typeorm";
 
 import { logger } from "../lib/logger";
 import { config } from "../config";
@@ -6,15 +6,15 @@ import { stringifyError } from "../helpers/error";
 import { User } from "../model/user";
 import { AccountTransaction } from "../model/account-transaction";
 
-export async function connectDatabase(): Promise<void> {
+export async function connectServiceDatabase(): Promise<Connection> {
     try {
-        await createConnection({
+        return await createConnection({
             type: "postgres",
-            host: config["db.host"],
-            port: config["db.port"],
-            username: config["db.user"],
-            password: config["db.password"],
-            database: config["db.name"],
+            host: config["app.db.host"],
+            port: config["app.db.port"],
+            username: config["app.db.user"],
+            password: config["app.db.password"],
+            database: config["app.db.name"],
             entities: [
                 User,
                 AccountTransaction
@@ -23,7 +23,7 @@ export async function connectDatabase(): Promise<void> {
             logging: false
         });
     } catch (error) {
-        logger.error(`The error detected at the top level: ${stringifyError(error)}`);
+        logger.error(`The error detected on the service database connection: ${stringifyError(error)}`);
         throw error;
     }
 }

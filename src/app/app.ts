@@ -5,7 +5,7 @@ import { logger } from "./lib/logger";
 import { config } from "./config";
 import { stringifyError } from "./helpers/error";
 import { buildApiRouter } from "./api";
-import { connectDatabase } from "./lib/database";
+import { connectServiceDatabase } from "./lib/database";
 
 async function startApp() {
     const app = express();
@@ -14,7 +14,7 @@ async function startApp() {
 
     app
         .listen(config["app.httpPort"], async () => {
-            await connectDatabase();
+            await connectServiceDatabase();
             logger.info(`Listening on port ${config["app.httpPort"]}`);
         })
         .on("error", error => {
