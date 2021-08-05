@@ -7,6 +7,20 @@ services:
       - .env
     ports:
       - "$POSTGRES_PORT:$POSTGRES_PORT"
+
+  service:
+    image: ivan-nosar/billing-service
+    depends_on:
+      - service-database
+    links:
+      - service-database
+    restart: on-failure
+    env_file:
+      - .env
+    ports:
+      - "$HTTP_PORT:$HTTP_PORT"
+    entrypoint: npm run start:service
+
   scheduler-database:
     image: mongo:5.0.1
     restart: on-failure
@@ -14,3 +28,14 @@ services:
       - .env
     ports:
       - "$MONGO_PORT:$MONGO_PORT"
+
+  scheduler:
+    image: ivan-nosar/billing-service
+    depends_on:
+      - scheduler-database
+    links:
+      - scheduler-database
+    restart: on-failure
+    env_file:
+      - .env
+    entrypoint: npm run start:scheduler
