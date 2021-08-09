@@ -3,9 +3,15 @@
 Сервис состоит из четырех отдельных компонентов, каждый из которых запакован в отдельный Docker-контейнер:
 - `service`: Основной сервис. `Node.js`-приложение. Точка входа: `./src/app/app.ts`
 - `service-database`: Контейнер с `Postgres` БД, используется для хранения данных сервиса
-- `scheduler`: Сервис с CRON-job, который "выводит" средства пользователей каждый день в 23:00.
-  Основан на [`agenda`](https://github.com/agenda/agenda) Точка входа: `./src/app/scheduler.ts`
+- `scheduler`: Сервис с CRON-job, который запрашивает "вывод" средств пользователей
+  у `scheduler-executor` каждый день в 23:00. Умеет ретраить упавшие запросы.
+  Основан на [`agenda`](https://github.com/agenda/agenda) и [`NATS`](https://nats.io/).
+  Точка входа: `./src/app/jobs/scheduler.ts`
+- `scheduler-executor`: Сервис, слушающий NATS-сообщения на вывод средств пользователей и
+  выполняющий транзакции вывода. Точка входа: `./src/app/jobs/executor.ts`
 - `scheduler-database`: Контейнер с `Mongo` БД, используется для хранения информации о CRON-job'ах
+- `nats`: Контейнер с развернутым сервисом NATS, через который пробрасываются сообщения между сервисами
+  `scheduler` и `scheduler-executor`
 
 В первую очередь необходимо подготовить файл конфигурации:
 
@@ -15,16 +21,17 @@ cp .env.example .env
 
 > **Внимание!** Значения переменных в `.env.example` установлены для работы сервиса внутри Docker.
 > Если вы захотите оставить БД в Docker, а `Node.js`-сервисы запустить локально - придется поправить
-> значения `MONGO_HOST` и `POSTGRES_HOST` на `localhost`. Подробнее [здесь](https://docs.docker.com/compose/networking/)
+> значения `MONGO_HOST`, `POSTGRES_HOST` и `NATS_HOST` на `localhost`.
+> Подробнее [здесь](https://docs.docker.com/compose/networking/)
 
-Образы БД собираются из публичных образов сразу в docker-compose, а вот `service` и `scheduler` основаны
-на одном Docker-образе, который необходимо предварительно собрать из исходников:
+Образы БД и `nats` собираются из публичных образов сразу в docker-compose, а вот `service`, `scheduler` и
+`scheduler-executor` основаны на одном Docker-образе, который необходимо предварительно собрать из исходников:
 
 ```sh
 docker build -t ivan-nosar/billing-service .
 ```
 
-Оркестрируется запуск сервисов через `docker-compose`. Для того, чтобы поднять все четыре сервиса, воспользуйтесь командой:
+Оркестрируется запуск сервисов через `docker-compose`. Для того, чтобы поднять все сервисы, воспользуйтесь командой:
 
 ```sh
 docker-compose up --detach
@@ -48,6 +55,8 @@ npm run lint # Проверить код линтером. Для автомат
 npm run start:service # Запустить собранный сервис API
 
 npm run start:scheduler # Запустить шедулер с CRON-job'ой
+
+npm run start:scheduler-executor # Запустить исполнитель вывода средств
 
 npm run start # Одновременный параллельный запуск сервиса и шедулера
 ```
