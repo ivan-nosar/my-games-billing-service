@@ -16,10 +16,16 @@ export const config = {
     "scheduler.jobSchedule": process.env.RETRIEVE_JOB_SCHEDULE ?? "",
     "scheduler.bulkSize": Number(process.env.BULK_SIZE) || 100,
     "scheduler.bulkProcessingDelay": Number(process.env.BULK_PROCESSING_DELAY) || 5000,
+    "scheduler.bulkProcessingTimeout": Number(process.env.BULK_PROCESSING_TIMEOUT) || 2000,
 
     "scheduler.db.host": process.env.MONGO_HOST ?? "",
     "scheduler.db.port": Number(process.env.MONGO_PORT),
     "scheduler.db.user": process.env.MONGO_INITDB_ROOT_USERNAME ?? "",
     "scheduler.db.password": process.env.MONGO_INITDB_ROOT_PASSWORD ?? "",
     "scheduler.db.name": process.env.MONGO_INITDB_DATABASE ?? "",
+
+    "scheduler.queue.monitorPort": process.env.NATS_MONITOR_PORT ?? "",
+    "scheduler.queue.routePort": process.env.NATS_ROUTE_PORT ?? "",
+    "scheduler.queue.clientPort": process.env.NATS_CLIENT_PORT ?? "",
+    "scheduler.queue.host": process.env.NATS_HOST ?? ""
 };

@@ -39,3 +39,24 @@ services:
     env_file:
       - .env
     entrypoint: npm run start:scheduler
+
+  scheduler-executor:
+    image: ivan-nosar/billing-service
+    depends_on:
+      - scheduler-database
+    links:
+      - scheduler-database
+    restart: on-failure
+    env_file:
+      - .env
+    entrypoint: npm run start:scheduler-executor
+
+  nats:
+    image: nats:latest
+    restart: on-failure
+    env_file:
+      - .env
+    ports:
+      - "$NATS_MONITOR_PORT:$NATS_MONITOR_PORT"
+      - "$NATS_ROUTE_PORT:$NATS_ROUTE_PORT"
+      - "$NATS_CLIENT_PORT:$NATS_CLIENT_PORT"

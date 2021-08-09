@@ -5,57 +5,50 @@ import { AccountTransaction, TransactionType } from "../model/account-transactio
 import { logger } from "../lib/logger";
 import { stringifyError } from "../helpers/error";
 
-export async function retrieveFunds(): Promise<boolean> {
+export const INVALID_RETRIEVED_COUNT = -1;
+
+export async function retrieveFunds(): Promise<number> {
+
     const connection = await connectServiceDatabase();
-
-    const usersCount = await connection
-        .createQueryBuilder(User, "user")
-        .where("user.score > 0")
-        .getCount();
-
-    // Execute bulk update
     try {
+        let result = 0;
         const bulkSize = config["scheduler.bulkSize"];
-        for (let i = 0; i < usersCount; i += bulkSize) {
-            await connection.transaction(async transactionalEntityManager => {
-                const userRepo = await transactionalEntityManager.getRepository(User);
+        await connection.transaction(async transactionalEntityManager => {
+            const userRepo = await transactionalEntityManager.getRepository(User);
 
-                const usersBulk = await userRepo
-                    .createQueryBuilder("user")
-                    .where("user.score > 0")
-                    .orderBy("id")
-                    .take(bulkSize)
-                    .getMany();
+            const usersBulk = await userRepo
+                .createQueryBuilder("user")
+                .where("user.score > 0")
+                .orderBy("id")
+                .take(bulkSize)
+                .getMany();
 
-                const retrievedUsers = usersBulk.map(user => ({
-                    ...user,
-                    score: 0
-                }));
-                userRepo.save(retrievedUsers);
+            const retrievedUsers = usersBulk.map(user => ({
+                ...user,
+                score: 0
+            }));
+            await userRepo.save(retrievedUsers);
 
-                const retrievalTransactions = usersBulk.map(user => {
-                    const transaction = new AccountTransaction();
-                    transaction.accountFrom = user.id;
-                    transaction.amount = user.score;
-                    transaction.type = TransactionType.RETRIEVAL;
+            const retrievalTransactions = usersBulk.map(user => {
+                const transaction = new AccountTransaction();
+                transaction.accountFrom = user.id;
+                transaction.amount = user.score;
+                transaction.type = TransactionType.RETRIEVAL;
 
-                    return transaction;
-                });
-
-                const accountTransactionRepo = await transactionalEntityManager.getRepository(AccountTransaction);
-                accountTransactionRepo.save(retrievalTransactions);
+                return transaction;
             });
 
-            await sleep(config["scheduler.bulkProcessingDelay"]);
-        }
+            const accountTransactionRepo = await transactionalEntityManager.getRepository(AccountTransaction);
+            await accountTransactionRepo.save(retrievalTransactions);
+
+            result = usersBulk.length;
+        });
+
+        return result;
     } catch (error) {
         logger.error(`The error detected at recurring job: ${stringifyError(error)}`);
-        return false;
+        return INVALID_RETRIEVED_COUNT;
+    } finally {
+        connection.close();
     }
-
-    return true;
-}
-
-async function sleep(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
 }
